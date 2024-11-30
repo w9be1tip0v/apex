@@ -12,6 +12,8 @@ from langchain_core.runnables import RunnableSequence
 from langchain_xai import ChatXAI
 from langchain_community.callbacks.manager import get_openai_callback
 
+from prompts import get_summary_prompt
+
 # =========================
 # Configuration and Logging Setup
 # =========================
@@ -198,16 +200,10 @@ def main():
     chat_xai = ChatXAI(
         xai_api_key=config['xai']['api_key'],
         model="grok-beta",
+        temperature=0.7,
     )
 
-    template = PromptTemplate(
-        template=f"""
-        Provide a concise summary of the following text in no more than {max_length} characters. Do not include any introductory phrases or headings.
-
-        {{document}}
-        """,
-        input_variables=["document"]
-    )
+    template = get_summary_prompt(max_length=max_length)
 
     analyzer = PDFAnalyzer(chat_xai=chat_xai, prompt_template=template, max_length=max_length)
 
@@ -218,6 +214,12 @@ def main():
 
     for pdf_path in pdf_files:
         try:
+            output_json_path = output_dir / f"{pdf_path.stem}_summary.json"
+
+            if output_json_path.exists():
+                logger.info(f"Skipping {pdf_path.name} as {output_json_path.name} already exists.")
+                continue
+
             logger.info(f"Processing PDF: {pdf_path.name}")
             extractor = PDFExtractor()
             pdf_text = extractor.extract_text(pdf_path)
@@ -230,8 +232,6 @@ def main():
                 "summary": analysis_result["summary"],
                 "used_tokens": analysis_result["used_tokens"]
             }
-
-            output_json_path = output_dir / f"{pdf_path.stem}_summary.json"
 
             analyzer.save_to_json(result, output_json_path)
 

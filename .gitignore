@@ -163,3 +163,7 @@ cython_debug/
 
 # macOS Files
 .DS_Store
+
+# Inputs and Outputs
+documents/
+outputs/
