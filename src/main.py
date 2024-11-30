@@ -1,22 +1,23 @@
-import os
 import json
 import logging
+import os
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import PyPDF2
 import yaml
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
+from langchain_community.callbacks.manager import get_openai_callback
 from langchain_core.runnables import RunnableSequence
 from langchain_xai import ChatXAI
-from langchain_community.callbacks.manager import get_openai_callback
 
 from prompts import get_summary_prompt
 
 # =========================
 # Configuration and Logging Setup
 # =========================
+
 
 class Config:
     """Class to load and maintain configuration settings."""
@@ -36,7 +37,7 @@ class Config:
         if not os.path.exists(self.config_path):
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
 
-        with open(self.config_path, 'r', encoding='utf-8') as file:
+        with open(self.config_path, "r", encoding="utf-8") as file:
             config = yaml.safe_load(file)
 
         # Replace environment variable placeholders with actual values
@@ -50,7 +51,9 @@ class Config:
                 config[key] = self.resolve_env_variables(value)
         elif isinstance(config, list):
             config = [self.resolve_env_variables(item) for item in config]
-        elif isinstance(config, str) and config.startswith("${") and config.endswith("}"):
+        elif (
+            isinstance(config, str) and config.startswith("${") and config.endswith("}")
+        ):
             env_var = config[2:-1]
             env_value = os.getenv(env_var)
             if not env_value:
@@ -67,11 +70,8 @@ def setup_logging(log_file: str, log_level: str):
 
     logging.basicConfig(
         level=numeric_level,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[logging.FileHandler(log_file), logging.StreamHandler()],
     )
     return logging.getLogger(__name__)
 
@@ -79,6 +79,7 @@ def setup_logging(log_file: str, log_level: str):
 # =========================
 # PDF Processing Classes
 # =========================
+
 
 class PDFExtractor:
     """Class to extract text from PDF files."""
@@ -95,25 +96,29 @@ class PDFExtractor:
         """
         logger.info(f"Extracting text from PDF file: {pdf_path}")
         try:
-            with open(pdf_path, 'rb') as file:
+            with open(pdf_path, "rb") as file:
                 reader = PyPDF2.PdfReader(file)
-                text = ''
+                text = ""
                 for page_num, page in enumerate(reader.pages, start=1):
                     page_text = page.extract_text()
                     if page_text:
-                        text += page_text + '\n'
+                        text += page_text + "\n"
                         logger.debug(f"Extracted text from page {page_num}.")
             logger.info(f"Completed text extraction from PDF: {pdf_path}")
             return text
         except Exception as e:
-            logger.error(f"Error occurred while extracting text from PDF '{pdf_path}': {e}")
+            logger.error(
+                f"Error occurred while extracting text from PDF '{pdf_path}': {e}"
+            )
             raise
 
 
 class PDFAnalyzer:
     """Class to manage PDF analysis and save results."""
 
-    def __init__(self, chat_xai: ChatXAI, prompt_template: PromptTemplate, max_length: int):
+    def __init__(
+        self, chat_xai: ChatXAI, prompt_template: PromptTemplate, max_length: int
+    ):
         """Initialize the PDFAnalyzer.
 
         Args:
@@ -139,17 +144,16 @@ class PDFAnalyzer:
                 summary = self.chain.invoke({"document": text})
                 logger.info("Text analysis completed.")
                 logger.info(f"Tokens used: {cb.total_tokens}")
-            
-            summary_text = getattr(summary, 'content', str(summary))
+
+            summary_text = getattr(summary, "content", str(summary))
 
             if len(summary_text) > self.max_length:
-                summary_text = summary_text[:self.max_length]
-                logger.warning(f"Summary exceeded the maximum length of {self.max_length} characters and was truncated.")
+                summary_text = summary_text[: self.max_length]
+                logger.warning(
+                    f"Summary exceeded the maximum length of {self.max_length} characters and was truncated."
+                )
 
-            return {
-                "summary": summary_text,
-                "used_tokens": cb.total_tokens
-            }
+            return {"summary": summary_text, "used_tokens": cb.total_tokens}
         except Exception as e:
             logger.error(f"Error occurred during text analysis: {e}")
             raise
@@ -164,7 +168,7 @@ class PDFAnalyzer:
         """
         logger.info(f"Saving analysis results to JSON file: {output_path}")
         try:
-            with open(output_path, 'w', encoding='utf-8') as json_file:
+            with open(output_path, "w", encoding="utf-8") as json_file:
                 json.dump(data, json_file, ensure_ascii=False, indent=4)
             logger.info(f"Successfully saved JSON file: {output_path}")
         except Exception as e:
@@ -175,6 +179,7 @@ class PDFAnalyzer:
 # =========================
 # Main Processing Function
 # =========================
+
 
 def load_configuration(config_path: str = "config.yaml") -> dict:
     """Load configuration from a YAML file.
@@ -194,24 +199,26 @@ def main():
     logger.info("Starting the application.")
 
     config = load_configuration()
-    max_length = config.get('summary', {}).get('max_length', 500)
+    max_length = config.get("summary", {}).get("max_length", 500)
 
-    input_dir = Path(config['directories']['input'])
-    output_dir = Path(config['directories']['output'])
+    input_dir = Path(config["directories"]["input"])
+    output_dir = Path(config["directories"]["output"])
     input_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Input directory: {input_dir.resolve()}")
     logger.info(f"Output directory: {output_dir.resolve()}")
 
     chat_xai = ChatXAI(
-        xai_api_key=config['xai']['api_key'],
+        xai_api_key=config["xai"]["api_key"],
         model="grok-beta",
         temperature=0.7,
     )
 
     template = get_summary_prompt(max_length=max_length)
 
-    analyzer = PDFAnalyzer(chat_xai=chat_xai, prompt_template=template, max_length=max_length)
+    analyzer = PDFAnalyzer(
+        chat_xai=chat_xai, prompt_template=template, max_length=max_length
+    )
 
     pdf_files = list(input_dir.glob("*.pdf"))
     if not pdf_files:
@@ -223,7 +230,9 @@ def main():
             output_json_path = output_dir / f"{pdf_path.stem}_summary.json"
 
             if output_json_path.exists():
-                logger.info(f"Skipping {pdf_path.name} as {output_json_path.name} already exists.")
+                logger.info(
+                    f"Skipping {pdf_path.name} as {output_json_path.name} already exists."
+                )
                 continue
 
             logger.info(f"Processing PDF: {pdf_path.name}")
@@ -236,7 +245,7 @@ def main():
                 "input_pdf": str(pdf_path.resolve()),
                 "prompt": template.template.strip(),
                 "summary": analysis_result["summary"],
-                "used_tokens": analysis_result["used_tokens"]
+                "used_tokens": analysis_result["used_tokens"],
             }
 
             analyzer.save_to_json(result, output_json_path)
@@ -260,8 +269,8 @@ if __name__ == "__main__":
         exit(1)
 
     setup_logging(
-        log_file=initial_config.get('logging', {}).get('log_file', 'app.log'),
-        log_level=initial_config.get('logging', {}).get('log_level', 'INFO')
+        log_file=initial_config.get("logging", {}).get("log_file", "app.log"),
+        log_level=initial_config.get("logging", {}).get("log_level", "INFO"),
     )
     logger = logging.getLogger(__name__)
 

@@ -29,6 +29,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Upgrade pip
 RUN pip install --upgrade pip
 
+# Install uv
+RUN pip install uv
+
 # Switch to the non-root user
 USER $USERNAME
 

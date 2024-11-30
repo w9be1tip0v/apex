@@ -1,8 +1,0 @@
-langchain
-langchain-xai
-langchain-community
-langsmith
-PyPDF2
-pyyaml
-requests
-python-dotenv
