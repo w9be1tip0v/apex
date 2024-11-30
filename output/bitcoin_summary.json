@@ -1,0 +1,6 @@
+{
+    "input_pdf": "/workspace/documents/bitcoin.pdf",
+    "prompt": "Provide a concise summary of the following text in no more than 1500 characters. Do not include any introductory phrases or headings.\n\n        {document}",
+    "summary": "Bitcoin, proposed by Satoshi Nakamoto, introduces a peer-to-peer electronic cash system that enables direct online payments without financial institutions. The system uses digital signatures for ownership verification and a timestamped proof-of-work chain to prevent double-spending. Transactions are broadcasted across the network, and nodes work to validate and timestamp them into blocks. The longest chain of blocks represents the accepted history of transactions, secured by computational effort. Nodes are incentivized to participate through transaction fees and the creation of new bitcoins in each block. This setup ensures security as long as honest nodes control more CPU power than attackers. The system also offers privacy by using anonymous public keys, and includes mechanisms for efficient transaction verification and disk space management.",
+    "used_tokens": 5432
+}
