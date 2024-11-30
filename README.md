@@ -16,28 +16,27 @@ It provides functionalities to extract text from PDFs, generate concise summarie
 ## Requirements
 
 - Python 3.8 or higher
-- Required Python libraries are listed in `requirements.txt`.
+- `uv` for dependency and virtual environment management
 
 ## Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/apex.git
+   git clone https://github.com/w9be1tip0v/apex.git
    cd apex
    ```
 
-2. Create and activate a virtual environment:
+2. Install `uv`:
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   pip install uv
    ```
 
-3. Install dependencies:
+3. Initialize and install dependencies with UV:
 
    ```bash
-   pip install -r requirements.txt
+   uv install
    ```
 
 4. Set up environment variables:
@@ -70,6 +69,26 @@ It provides functionalities to extract text from PDFs, generate concise summarie
 - Logs are stored in the file specified in the configuration (`app.log` by default).
 - Adjust the log level (`INFO`, `DEBUG`, etc.) in the `config.yaml` file as needed.
 
+## Managing Dependencies
+
+- Add new dependencies with UV:
+
+  ```bash
+  uv add <package-name>
+  ```
+
+- Remove dependencies with UV:
+
+  ```bash
+  uv remove <package-name>
+  ```
+
+- List installed dependencies:
+
+  ```bash
+  uv list
+  ```
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -86,4 +105,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Contact
 
-For questions or feedback, please contact [your email address].
+For questions or feedback, please contact [whois@kedavra.dev].

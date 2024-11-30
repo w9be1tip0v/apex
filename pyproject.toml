@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Apex project for PDF processing and analysis"
 authors = ["CaFeBaBe <whois@kedavra.dev>"]
 readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["python", "uv", "devcontainer", "xai", "grok", "PDF analysis"]
 requires-python = ">=3.9"
 dependencies = [
     "langchain>=0.3.9",

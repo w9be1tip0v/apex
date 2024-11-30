@@ -1,6 +1,6 @@
 directories:
-  input: "documents"
-  output: "outputs"
+  input: "input"
+  output: "output"
 
 xai:
   api_key: "${XAI_API_KEY}"
@@ -10,4 +10,4 @@ logging:
   log_level: "INFO"
 
 summary:
-  max_length: 1500
+  max_length: 2500
