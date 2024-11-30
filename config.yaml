@@ -1,0 +1,15 @@
+# config.yaml
+
+directories:
+  input: "documents"
+  output: "outputs"
+
+xai:
+  api_key: "${XAI_API_KEY}"
+
+logging:
+  log_file: "app.log"
+  log_level: "INFO"
+
+summary:
+  max_length: 1500
