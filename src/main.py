@@ -22,6 +22,12 @@ class Config:
     """Class to load and maintain configuration settings."""
 
     def __init__(self, config_path: str = "config.yaml"):
+        """
+        Initializes the Config class with a given configuration path.
+
+        Args:
+            config_path (str): Path to the configuration file. Defaults to "config.yaml".
+        """
         self.config_path = config_path
         self.config = self.load_config()
 
