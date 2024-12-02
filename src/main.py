@@ -143,7 +143,8 @@ class PDFAnalyzer:
             with get_openai_callback() as cb:
                 summary = self.chain.invoke({"document": text})
                 logger.info("Text analysis completed.")
-                logger.info(f"Tokens used: {cb.total_tokens}")
+                logger.info(f"Prompt Tokens used: {cb.prompt_tokens}")
+                logger.info(f"Completion Tokens used: {cb.completion_tokens}")
 
             summary_text = getattr(summary, "content", str(summary))
 
@@ -153,7 +154,11 @@ class PDFAnalyzer:
                     f"Summary exceeded the maximum length of {self.max_length} characters and was truncated."
                 )
 
-            return {"summary": summary_text, "used_tokens": cb.total_tokens}
+            return {
+                "summary": summary_text,
+                "input_tokens": cb.prompt_tokens,
+                "output_tokens": cb.completion_tokens,
+            }
         except Exception as e:
             logger.error(f"Error occurred during text analysis: {e}")
             raise
@@ -208,11 +213,24 @@ def main():
     logger.info(f"Input directory: {input_dir.resolve()}")
     logger.info(f"Output directory: {output_dir.resolve()}")
 
+    # ======= Updated Section Starts Here =======
+
+    # Retrieve the model from the configuration
+    xai_config = config.get("xai", {})
+    api_key = xai_config.get("api_key")
+    model = xai_config.get("model", "grok-beta")  # Default to "grok-beta" if not specified
+
+    if not model:
+        logger.error("No model specified in the configuration under 'xai.model'.")
+        raise ValueError("Model not specified in the configuration.")
+
     chat_xai = ChatXAI(
-        xai_api_key=config["xai"]["api_key"],
-        model="grok-beta",
+        xai_api_key=api_key,
+        model=model,
         temperature=0.7,
     )
+
+    # ======= Updated Section Ends Here =======
 
     template = get_summary_prompt(max_length=max_length)
 
@@ -245,7 +263,8 @@ def main():
                 "input_pdf": str(pdf_path.resolve()),
                 "prompt": template.template.strip(),
                 "summary": analysis_result["summary"],
-                "used_tokens": analysis_result["used_tokens"],
+                "input_tokens": analysis_result["input_tokens"],
+                "output_tokens": analysis_result["output_tokens"],
             }
 
             analyzer.save_to_json(result, output_json_path)

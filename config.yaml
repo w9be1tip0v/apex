@@ -4,6 +4,7 @@ directories:
 
 xai:
   api_key: "${XAI_API_KEY}"
+  model: "grok-beta"
 
 logging:
   log_file: "app.log"
